@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Links</title>
+</head>
+<body>
+    {% for programa in programas %}
+    <div>
+        <h4>{{ programa.nombre }}</h4>
+        <p>Año: {{ programa.curso }} - Semestre: {{ programa.semestre }}</p>
+    </div>
+{% endfor %}
+</body>
+</html>

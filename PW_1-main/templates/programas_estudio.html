@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selección de Programas de Estudio</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+<div class="sheet-container">
+    <div class="content">
+        <div class="page">
+            <h2>Selección de Programas de Estudio</h2>
+            <form id="programasForm" method="POST" action="{% url 'pdf_to_html' %}"> <!--seleccion de impresion-->
+                {% csrf_token %}
+                {% for carrera in carreras %}
+                <h3>{{ carrera.nombre }}</h3>
+                <div class="programas-container">
+                    {% for programa in carrera.programas %}
+                    <div class="programa">
+                        <input type="checkbox" name="programas_seleccionados" value="{{ programa.id }}">
+                        <label> Materia: {{ programa.materia }} -Curso: {{ programa.curso }} -Semestre: {{ programa.semestre }})</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+                <button type="submit" id="imprimirBtn" disabled>Imprimir Seleccionados</button>
+            </form>
+            <!-- Agrega el siguiente div para mostrar los enlaces a los PDF seleccionados -->
+            <div id="pdfLinks"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Esta función maneja el cambio en los checkboxes
+        $('input[type="checkbox"]').change(function () {
+            // Verificar si hay checkboxes seleccionados
+            var anyCheckboxSelected = $('input[name="programas_seleccionados"]:checked').length > 0;
+            // Deshabilitar el botón de imprimir si no hay checkboxes seleccionados
+            $('#imprimirBtn').prop('disabled', !anyCheckboxSelected);
+        });
+    
+        // Esta función maneja la petición AJAX cuando se cambia la selección de checkboxes
+        function actualizarPDFsSeleccionados() {
+            // Obtener los programas seleccionados
+            var selectedPrograms = $('input[name="programas_seleccionados"]:checked').map(function () {
+                return this.value;
+            }).get();
+    
+            // Realizar la petición AJAX
+            $.ajax({
+                type: 'POST',
+                url: $('#pdfLinks').attr('action'), // Asegúrate de que este selector apunte al formulario correcto
+                data: {
+                    programas_seleccionados: selectedPrograms,
+                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                success: function (response) {
+                    console.log(response);
+                    // Mostrar los enlaces a los PDF seleccionados
+                    $('#pdfLinks').html(response);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error en la solicitud AJAX:", error);
+                }
+            });
+        }
+    
+        // Llamar a la función para actualizar los PDFs seleccionados cuando cambia un checkbox
+        $('input[type="checkbox"]').change(actualizarPDFsSeleccionados);
+    });
+    
+    </script>
+</body>
+</html>
